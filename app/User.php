@@ -1,12 +1,12 @@
 <?php
 	
-	namespace App\Model;
+	namespace App;
 	
 	use Illuminate\Notifications\Notifiable;
 	
 	class User extends \Cartalyst\Sentinel\Users\EloquentUser
 	{
-		use Notifiable;
+		//use Notifiable;
 		
 		protected $fillable = [
 			'email',
