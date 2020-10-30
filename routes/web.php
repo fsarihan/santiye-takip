@@ -1,0 +1,62 @@
+<?php
+	
+	use Illuminate\Support\Facades\Route;
+	
+	/*
+	|--------------------------------------------------------------------------
+	| Web Routes
+	|--------------------------------------------------------------------------
+	|
+	| Here is where you can register web routes for your application. These
+	| routes are loaded by the RouteServiceProvider within a group which
+	| contains the "web" middleware group. Now create something great!
+	|
+	*/
+	
+	Route::name('panel')
+		->middleware('user')
+		->prefix('panel')
+		->group(function () {
+			Route::get('/', 'PagesController@index')
+				->name('.index');
+			Route::get('logout', 'User@logout')
+				->name('.logout');
+			Route::get('calisanlar', 'PagesController@calisanlar')
+				->name('.calisanlar');
+			Route::get('calisanlar/ekle', 'PagesController@calisanEkle')
+				->name('.calisanEkle');
+			Route::post('calisanlar/ekle', 'PagesController@calisanEklePost')
+				->name('.calisanEklePost');
+		});
+	
+	Route::name('user')
+		->middleware('guest')
+		->group(function () {
+			Route::get('login', 'User@index')
+				->name('.login');
+			Route::get('register', 'User@register')
+				->name('.register');
+			Route::post('login', 'User@loginPost')
+				->name('.loginPost');
+			Route::post('register', 'User@registerPost')
+				->name('.registerPost');
+		});
+	
+	Route::get('/', 'PagesController@index')
+		->middleware('user');
+	//
+	//
+	//// Demo routes
+	Route::get('/datatables', 'PagesController@datatables');
+	Route::get('/ktdatatables', 'PagesController@ktDatatables');
+	Route::get('/select2', 'PagesController@select2');
+	Route::get('/icons/custom-icons', 'PagesController@customIcons');
+	//Route::get('/icons/flaticon', 'PagesController@flaticon');
+	//Route::get('/icons/fontawesome', 'PagesController@fontawesome');
+	//Route::get('/icons/lineawesome', 'PagesController@lineawesome');
+	//Route::get('/icons/socicons', 'PagesController@socicons');
+	//Route::get('/icons/svg', 'PagesController@svg');
+	//
+	//// Quick search dummy route to display html elements in search dropdown (header search)
+	Route::get('/quick-search', 'PagesController@quickSearch')
+		->name('quick-search');
