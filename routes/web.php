@@ -21,6 +21,12 @@
 				->name('.index');
 			Route::get('logout', 'User@logout')
 				->name('.logout');
+			Route::get('santiyeler', 'PagesController@santiyeler')
+				->name('.santiyeler');
+			Route::get('puantaj', 'PagesController@puantaj')
+				->name('.puantaj');
+			Route::post('puantaj', 'PagesController@puantajPost')
+				->name('.puantajPost');
 			Route::get('calisanlar', 'PagesController@calisanlar')
 				->name('.calisanlar');
 			Route::get('calisanlar/ekle', 'PagesController@calisanEkle')

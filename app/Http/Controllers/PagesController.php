@@ -2,7 +2,7 @@
 	
 	namespace App\Http\Controllers;
 	
-	use Carbon;
+	use Carbon\Carbon;
 	use Illuminate\Http\Request;
 	use Sentinel;
 	use App\Isciler;
@@ -11,6 +11,7 @@
 	use App\CalisanMaaslari;
 	use App\IsciSantiyeBaglanti;
 	use App\IsciUzmanlikBaglanti;
+	use App\Puantaj;
 	
 	class PagesController extends Controller
 	
@@ -33,8 +34,6 @@
 		}
 		
 		public function calisanEklePost(Request $request) {
-			//dd($request);
-			//exit();
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
 			$adi = $request->input('isim');
@@ -110,7 +109,7 @@
 			
 			return redirect()
 				->route('panel.calisanlar')
-				->with('success', 'Kaydınız başarıyla tamamlandı.');
+				->with('success', 'Kayıt işlemi başarıyla tamamlandı.');
 			//TODO: hataları ayıklamak.
 			//TODO: aynı zamanda kullanıcı seçeneği var ise 2. bir sayfaya götürüp yetkileri ayarlamak.
 			//TODO: kayıt yaptırırken aynı şirket ID de tc kimlik numarası aynı olan kişi kaydı barınamaz yapmak!
@@ -154,6 +153,96 @@
 			];
 			
 			return view('pages.calisanlar')->with('data', $data);
+		}
+		
+		function santiyeler() {
+			$page_title = 'Şantiyeler';
+			$page_description = 'Şirketinize ait şantiyelerin listesi.';
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$sirketeAitSantiyeler = Santiyeler::where('sirket_id', $sirketID)
+				->get()
+				->toArray();
+			
+			$data = [
+				//'calisanlar' => $isciler,
+				'santiyeler' => $sirketeAitSantiyeler,
+			];
+			
+			return view('pages.santiyeler', compact('page_title', 'page_description', 'sirketeAitSantiyeler'));
+		}
+		
+		function puantajPost(Request $request) {
+			//TODO: gelen istekte istek yapan kişi şantiyede yetkili mi? istek yapılan şantiye ıd istek yapan kişinin şirketinde mi şeklinde güvenlik sorgularını çalıştır.
+			$yevmiyeler = $request->input("calisanYevmiye");
+			$seciliSantiyeID = $request->input("santiyeID");
+			$seciliGun = Carbon::parse($request->input("seciliGun"))
+				->toDatetimeString();
+			
+			foreach($yevmiyeler as $yevmiye) {
+				$puantaj = new Puantaj;
+				$puantaj->tarih = $seciliGun;
+				$puantaj->isci_id = explode("|", $yevmiye)[0];
+				$puantaj->puan = explode("|", $yevmiye)[1];
+				$puantaj->santiye_id = $seciliSantiyeID;
+				$puantaj->save();
+			}
+			
+			return redirect()
+				->route('panel.puantaj')
+				->with('success', 'Yevmiyeler başarıyla '.$seciliGun.' tarihi için kaydedildi.');
+		}
+		
+		function puantaj() {
+			$page_title = 'Puantaj';
+			$page_description = 'Seçili Şantiyenin Puantaj Listesi.';
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$seciliSantiye = Santiyeler::where('sirket_id', $sirketID)
+				->first();
+			$puantaj = Puantaj::where('santiye_id', $seciliSantiye->id)
+				->get()
+				->map(function ($puan) {
+					switch($puan['puan']) {
+						case "0":
+							$puan['class'] = "";
+							break;
+						case "1":
+							$puan['class'] = "primary";
+							break;
+						case "0.5":
+							$puan['class'] = "warning";
+							break;
+						case "1.5":
+							$puan['class'] = "info";
+							break;
+						case "2":
+							$puan['class'] = "danger";
+							break;
+					}
+					
+					return $puan;
+				});
+			$isciler = Isciler::where('sirket_id', $sirketID)
+				->get()
+				->map(function ($isci) use ($seciliSantiye) {
+					$isciSantiyeleri = $isci->getSantiye()
+						->get();
+					$santiyeCalisaniMi = false;
+					foreach($isciSantiyeleri as $santiye) {
+						if($seciliSantiye->id == $santiye['santiye_id']) {
+							$santiyeCalisaniMi = true;
+						}
+					}
+					$isci['santiyeCalisanMi'] = $santiyeCalisaniMi;
+					
+					return $isci;
+				});
+			$isciler = $isciler->filter(function ($value, $key) {
+				return $value['santiyeCalisanMi'];
+			});
+			
+			return view('pages.puantaj', compact('page_title', 'page_description', 'seciliSantiye', 'isciler', 'puantaj'));
 		}
 		/**
 		 * Demo methods below
@@ -233,6 +322,6 @@
 		
 		// Quicksearch Result
 		public function quickSearch() {
-			return view('layout.partials.extras._quick_search_result');
+			//return view('layout.partials.extras._quick_search_result');
 		}
 	}

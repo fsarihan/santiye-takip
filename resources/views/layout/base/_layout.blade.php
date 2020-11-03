@@ -59,9 +59,9 @@
         @include('layout.partials.extras.offcanvas._quick-panel')
     @endif
 
-    {{--@if (config('layout.extras.toolbar.display'))--}}
-    {{--@include('layout.partials.extras._toolbar')--}}
-    {{--@endif--}}
+    @if (config('layout.extras.toolbar.display'))
+	    @include('layout.partials.extras._toolbar')
+    @endif
 
     @if (config('layout.extras.chat.display'))
         @include('layout.partials.extras._chat')

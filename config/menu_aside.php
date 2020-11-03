@@ -45,14 +45,14 @@
 				'title' => 'Şantiyeler',
 				'root' => true,
 				'icon' => 'media/svg/icons/Home/Library.svg',
-				'page' => 'builder',
+				'page' => 'panel/santiyeler',
 				'visible' => 'preview',
 			],
 			[
 				'title' => 'Şantiye Puantaj',
 				'root' => true,
 				'icon' => 'flaticon-coins',
-				'page' => 'builder',
+				'page' => 'panel/puantaj',
 				'visible' => 'preview',
 			],
 			[
