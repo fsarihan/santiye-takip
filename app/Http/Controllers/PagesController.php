@@ -12,6 +12,7 @@
 	use App\IsciSantiyeBaglanti;
 	use App\IsciUzmanlikBaglanti;
 	use App\Puantaj;
+	use SoftDeletes;
 	
 	class PagesController extends Controller
 	
@@ -173,6 +174,7 @@
 		}
 		
 		function puantajPost(Request $request) {
+			
 			//TODO: gelen istekte istek yapan kişi şantiyede yetkili mi? istek yapılan şantiye ıd istek yapan kişinin şirketinde mi şeklinde güvenlik sorgularını çalıştır.
 			$yevmiyeler = $request->input("calisanYevmiye");
 			$seciliSantiyeID = $request->input("santiyeID");
@@ -180,6 +182,9 @@
 				->toDatetimeString();
 			
 			foreach($yevmiyeler as $yevmiye) {
+				Puantaj::where('isci_id', explode("|", $yevmiye)[0])
+					->where('tarih', $seciliGun)
+					->delete();
 				$puantaj = new Puantaj;
 				$puantaj->tarih = $seciliGun;
 				$puantaj->isci_id = explode("|", $yevmiye)[0];
@@ -190,7 +195,7 @@
 			
 			return redirect()
 				->route('panel.puantaj')
-				->with('success', 'Yevmiyeler başarıyla '.$seciliGun.' tarihi için kaydedildi.');
+				->with('success', 'Puantaj başarıyla '.$seciliGun.' tarihi için kaydedildi.');
 		}
 		
 		function puantaj() {

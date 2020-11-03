@@ -10,15 +10,15 @@
 					Puantaj Tablosu
 				</h3>
 			</div>
-			<button type="button" id="xxxx" class="btn btn-danger" hidden="true" disabled="true">
+			<button type="button" id="xxxx" class="btn btn-danger" hidden="true" hidden="true" disabled="true">
 				GEÇERSİZ TARİH
 			</button>
 			<button type="button" id="yevmiyeDuzenle" class="btn btn-warning" data-toggle="modal"
-			        data-target="#exampleModal" hidden="true">
+			        data-target="#exampleModal2" hidden="true">
 				Yevmiye Düzenle
 			</button>
 			<button type="button" id="yevmiyeEkle" class="btn btn-primary" data-toggle="modal"
-			        data-target="#exampleModal">
+			        data-target="#exampleModal" hidden="true">
 				Yevmiye Ekle
 			</button>
 		</div>
@@ -27,6 +27,64 @@
 		</div>
 	</div>
 
+	<div class="modal fade" id="exampleModal2" data-backdrop="static" tabindex="-1" role="dialog"
+	     aria-labelledby="staticBackdrop" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<form action="{{action('PagesController@puantajPost') }}" method="POST">
+					@CSRF
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel2">x</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<i aria-hidden="true" class="ki ki-close"></i>
+						</button>
+					</div>
+					<div class="modal-body">
+
+						<input type="hidden" id="seciliGunX" name="seciliGun">
+						<input type="hidden" id="santiyeIDX" name="santiyeID" value="{{$seciliSantiye['id']}}">
+						<table class="table table-bordered table-hover" id="kt_datatable">
+							<thead>
+							<tr>
+								<th>Adı Soyadı</th>
+								<th>Çalışma Durumu</th>
+								<th>Yevmiye</th>
+							</tr>
+							</thead>
+							<tbody>
+							@foreach($isciler as $isci)
+								<tr>
+									<td>{{$isci['adi']}}</td>
+									<td>Çalışıyor.</td>
+									{{--TODO: Çalışma durumuyla ilgili çalışma yap.--}}
+									<td>
+										<div class="dropdown bootstrap-select form-control">
+											<select name="calisanYevmiye[]" id="slct_{{$isci['id']}}"
+											        class="form-control selectpicker">
+												<option id="0" value="{{$isci['id']}}|0">Çalışma yok</option>
+												<option id="1" value="{{$isci['id']}}|1">Tam gün yevmiye</option>
+												<option id="1.5" value="{{$isci['id']}}|1.5">1.5 gün yevmiye</option>
+												<option id="0.5" value="{{$isci['id']}}|0.5">Yarım gün yevmiye</option>
+												<option id="2" value="{{$isci['id']}}|2">Çift yevmiye</option>
+											</select>
+										</div>
+									</td>
+								</tr>
+							@endforeach
+
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-light-primary font-weight-bold"
+						        data-dismiss="modal">Kapat
+						</button>
+						<button type="submit" class="btn btn-primary font-weight-bold">Kaydet</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 	<div class="modal fade" id="exampleModal" data-backdrop="static" tabindex="-1" role="dialog"
 	     aria-labelledby="staticBackdrop" aria-hidden="true">
 		<div class="modal-dialog" role="document">
@@ -138,7 +196,7 @@
 
 				defaultView: 'dayGridMonth',
 				defaultDate: TODAY,
-
+				firstDay: 1,
 				editable: true,
 				eventLimit: true, // allow "more" link when too many events
 				navLinks: true,
@@ -164,7 +222,11 @@
 						title: '{{collect($isciler)->where('id', $yevmiye["isci_id"])->first()['adi']}}',
 						start: moment('{{$yevmiye["tarih"]}}').format('YYYY-MM-DD'),
 						description: '{{$yevmiye["puan"]}}' + ' günlük çalıma',
-						className: "fc-event-solid-{{$yevmiye['class']}}"
+						className: "fc-event-solid-{{$yevmiye['class']}}",
+						extendedProps: {
+							isciID: '{{$yevmiye["isci_id"]}}',
+							puan: '{{$yevmiye["puan"]}}'
+						},
 					},
 					@endif
 					@endforeach
@@ -178,8 +240,13 @@
 				$('#exampleModalLabel').text(moment(calendar.getDate()).format('LL') + " Tarihi İçin Puantaj Ekle");
 			});
 			$('#yevmiyeDuzenle').click(function () {
-				//TODO: yeni modal oluştur, düzenleme işlerini bitir.
-				$('#exampleModalLabel2').text(moment(calendar.getDate()).format('LL') + " Tarihi İçin Puantaj Ekle");
+
+				$('#exampleModalLabel2').text(moment(calendar.getDate()).format('LL') + " Tarihi İçin Puantaj Düzenle");
+				calendar.getEvents().forEach(function (event) {
+					if (moment(event.start).format('YYYYMMDD') == moment(calendar.getDate()).format('YYYYMMDD')) {
+						$('#slct_' + event.extendedProps.isciID).selectpicker('val', event.extendedProps.isciID + '|' + event.extendedProps.puan);
+					}
+				});
 			});
 			setInterval(function () {
 				var events = calendar.getEvents();
@@ -195,6 +262,7 @@
 					$('#xxxx').prop('hidden', true);
 					$('#yevmiyeEkle').prop('hidden', false);
 					$('#seciliGun').val(moment(calendar.getDate()).format());
+					$('#seciliGunX').val(moment(calendar.getDate()).format());
 				}
 				if (eventStarts.indexOf(moment(calendar.getDate()).format('YYYYMMDD')) === -1) {
 					$('#yevmiyeDuzenle').prop('hidden', true);
@@ -202,7 +270,9 @@
 					$('#yevmiyeDuzenle').prop('hidden', false);
 					$('#yevmiyeEkle').prop('hidden', true);
 				}
-			}, 75)
+			}, 75);
+
+
 		});
 
 	</script>

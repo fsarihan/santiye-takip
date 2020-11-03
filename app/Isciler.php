@@ -3,9 +3,12 @@
 	namespace App;
 	
 	use Illuminate\Database\Eloquent\Model;
+	use Illuminate\Database\Eloquent\SoftDeletes;
 	
 	class Isciler extends Model
 	{
+		use SoftDeletes;
+		
 		//use Notifiable;
 		protected $table = 'isciler';
 		
