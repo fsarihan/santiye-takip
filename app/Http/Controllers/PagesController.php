@@ -3,6 +3,7 @@
 	namespace App\Http\Controllers;
 	
 	use Carbon\Carbon;
+	use Cartalyst\Support\Collection;
 	use Illuminate\Http\Request;
 	use Sentinel;
 	use App\Isciler;
@@ -154,6 +155,46 @@
 			];
 			
 			return view('pages.calisanlar')->with('data', $data);
+		}
+		
+		function calisanMaaslariSantiye() {
+			$page_title = 'Çalışan Maaşları';
+			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$seciliSantiye = Santiyeler::where('sirket_id', $sirketID)
+				->first();
+			$puantaj = Puantaj::where('santiye_id', $seciliSantiye->id)
+				->selectRaw("SUM(puantaj.puan) as toplamPuan")
+				->selectRaw("puantaj.isci_id as isciID")
+				->groupBy('puantaj.isci_id')
+				->get()
+				->map(function ($puan) {
+					$isci = Isciler::where('id', $puan['isciID'])
+						->first();
+					$puan['isci'] = $isci;
+					$yevmiye = CalisanMaaslari::where('isci_id', $puan['isciID'])
+						->join('ucret_turleri', 'calisan_maaslari.ucret_turu_id', '=', 'ucret_turleri.id')
+						->orderBy('created_at', 'desc')
+						->first();
+					$puan['ucretTuru'] = $yevmiye->tur;
+					$puan['yevmiye'] = $yevmiye->ucret;
+					if($yevmiye->ucret_turu_id == 2) {
+						$puan['toplamUcret'] = $yevmiye->ucret * $puan->toplamPuan;
+					}
+					if($yevmiye->ucret_turu_id == 1) {
+						$puan['toplamUcret'] = $yevmiye->ucret;
+					}
+					
+					return $puan;
+				})
+				->filter(function ($puan) {
+					if($puan['toplamUcret'] > 0) {
+						return true;
+					}
+				});;
+			
+			return view('pages.calisanMaaslariSantiye', compact('page_title', 'page_description', 'puantaj'));
 		}
 		
 		function santiyeler() {

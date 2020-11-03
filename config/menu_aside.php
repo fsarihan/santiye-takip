@@ -59,7 +59,7 @@
 				'title' => 'Şantiye Muhasebe',
 				'root' => true,
 				'icon' => 'flaticon-pie-chart-1',
-				'page' => 'builder',
+				'page' => 'panel/santiye-muhasebe/calisan-maaslari',
 				'visible' => 'preview',
 			],
 			[

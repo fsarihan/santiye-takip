@@ -23,6 +23,8 @@
 				->name('.logout');
 			Route::get('santiyeler', 'PagesController@santiyeler')
 				->name('.santiyeler');
+			Route::get('santiye-muhasebe/calisan-maaslari', 'PagesController@calisanMaaslariSantiye')
+				->name('.calisanMaaslariSantiye');
 			Route::get('puantaj', 'PagesController@puantaj')
 				->name('.puantaj');
 			Route::post('puantaj', 'PagesController@puantajPost')
