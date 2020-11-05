@@ -14,11 +14,58 @@
 	use App\IsciSantiyeBaglanti;
 	use App\IsciUzmanlikBaglanti;
 	use App\Puantaj;
+	use App\KullaniciTipleri;
 	use SoftDeletes;
 	
 	class PagesController extends Controller
 	
 	{
+		public function kullaniciTipleri() {
+			$page_title = 'Kullanıcı Tipleri';
+			$page_description = 'Kullanıcı tipleri oluşturun, düzenleyin, yetkilendirin.';
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$kullaniciTipleri = KullaniciTipleri::where('sirket_id', $sirketID);
+			
+			return view('pages.kullaniciTipleri', compact('page_title', 'page_description', 'kullaniciTipleri'));
+		}
+		
+		public function createRole() {
+			$user = Sentinel::getUser();
+			//$sirketID = $user->sirket_id;
+			$role = Sentinel::findRoleBySlug("owners");
+			
+			if(! $role) {
+				$role = Sentinel::getRoleRepository()
+					->createModel()
+					->create([
+						'name' => 'Owner',
+						'slug' => 'owners',
+					]);
+				$role->permissions = [
+					'admin' => true,
+					'calisan.goruntule' => true,
+					'calisan.ekle' => true,
+					'calisan.duzenle' => true,
+					'calisan.sil' => true,
+					'calisan.sadeceKendiSantiyesi' => false,
+					'kullanici.goruntule' => true,
+					'kullanici.ekle' => true,
+					'kullanici.duzenle' => true,
+					'kullanici.sil' => true,
+					'santiye.goruntule' => true,
+					'santiye.degistirTumu' => true,
+					'santiye.ekle' => true,
+					'santiye.duzenle' => true,
+					'santiye.puantaj.goruntule' => true,
+					'santiye.puantaj.ekle' => true,
+					'santiye.puantaj.duzenle' => true,
+					'santiye.puantaj.onayla' => true,
+				];
+				$role->save();
+			}
+		}
+		
 		public static function secilebilirSantiyeler($request) {
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
@@ -197,11 +244,11 @@
 			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
 			if(! $seciliTarih) {
 				return view('pages.maasListeSantiye', compact('page_title', 'page_description'));
 			}
-			$seciliSantiye = $request->session()
-				->get('seciliSantiyeID');
 			$maaslar = $this->maasHesapla($seciliSantiye, $seciliTarih);
 			
 			return view('pages.calisanMaaslariSantiye', compact('page_title', 'page_description', 'maaslar'));

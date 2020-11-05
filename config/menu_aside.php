@@ -81,7 +81,7 @@
 				'title' => 'Kullanıcı Tipleri',
 				'root' => true,
 				'icon' => 'flaticon2-group',
-				'page' => 'builder',
+				'page' => 'panel/kullanici-tipleri',
 				'visible' => 'preview',
 			],
 			[

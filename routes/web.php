@@ -19,6 +19,8 @@
 		->group(function () {
 			Route::get('/', 'PagesController@index')
 				->name('.index');
+			Route::get('/kullanici-tipleri', 'PagesController@kullaniciTipleri')
+				->name('.kullaniciTipleri');
 			Route::get('logout', 'User@logout')
 				->name('.logout');
 			Route::get('santiye-sec/{santiyeID}', 'PagesController@santiyeSec')
