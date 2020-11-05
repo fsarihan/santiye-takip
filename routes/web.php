@@ -21,9 +21,11 @@
 				->name('.index');
 			Route::get('logout', 'User@logout')
 				->name('.logout');
+			Route::get('santiye-sec/{santiyeID}', 'PagesController@santiyeSec')
+				->name('.santiyeSec');
 			Route::get('santiyeler', 'PagesController@santiyeler')
 				->name('.santiyeler');
-			Route::get('santiye-muhasebe/calisan-maaslari', 'PagesController@calisanMaaslariSantiye')
+			Route::get('santiye-muhasebe/calisan-maaslari/{donem?}', 'PagesController@calisanMaaslariSantiye')
 				->name('.calisanMaaslariSantiye');
 			Route::get('puantaj', 'PagesController@puantaj')
 				->name('.puantaj');

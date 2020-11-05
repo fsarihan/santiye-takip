@@ -25,6 +25,6 @@
 		 */
 		public function boot() {
 			Schema::defaultStringLength(191);
-			\Carbon\Carbon::setLocale("tr");
+			Carbon::setLocale("tr");
 		}
 	}

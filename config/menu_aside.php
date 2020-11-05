@@ -11,43 +11,19 @@
 				'page' => '/',
 				'new-tab' => false,
 			],
-			// Layout
 			[
-				'section' => 'Çalışan Yönetimi',
-			],
-			[
-				'title' => 'Çalışanlar',
+				'title' => 'E-Mail',
 				'root' => true,
-				'icon' => 'flaticon2-user',
-				'page' => 'panel/calisanlar',
-				'visible' => 'preview',
-			],
-			[
-				'title' => 'Kullanıcılar',
-				'root' => true,
-				'icon' => 'flaticon-users-1',
-				'page' => 'builder',
-				'visible' => 'preview',
-			],
-			[
-				'title' => 'Kullanıcı Tipleri',
-				'root' => true,
-				'icon' => 'flaticon2-group',
-				'page' => 'builder',
-				'visible' => 'preview',
+				'icon' => 'flaticon2-mail', // or can be 'flaticon-home' or any flaticon-*
+				'page' => '/',
+				'new-tab' => true,
 			],
 			
 			// Layout
 			[
 				'section' => 'Şantiye Yönetimi',
 			],
-			[
-				'title' => 'Şantiyeler',
-				'root' => true,
-				'icon' => 'media/svg/icons/Home/Library.svg',
-				'page' => 'panel/santiyeler',
-				'visible' => 'preview',
-			],
+			
 			[
 				'title' => 'Şantiye Puantaj',
 				'root' => true,
@@ -86,6 +62,34 @@
 			// Layout
 			[
 				'section' => 'Şirket Yönetimi',
+			],
+			[
+				'title' => 'Çalışanlar',
+				'root' => true,
+				'icon' => 'flaticon2-user',
+				'page' => 'panel/calisanlar',
+				'visible' => 'preview',
+			],
+			[
+				'title' => 'Kullanıcılar',
+				'root' => true,
+				'icon' => 'flaticon-users-1',
+				'page' => 'builder',
+				'visible' => 'preview',
+			],
+			[
+				'title' => 'Kullanıcı Tipleri',
+				'root' => true,
+				'icon' => 'flaticon2-group',
+				'page' => 'builder',
+				'visible' => 'preview',
+			],
+			[
+				'title' => 'Şantiyeler',
+				'root' => true,
+				'icon' => 'media/svg/icons/Home/Library.svg',
+				'page' => 'panel/santiyeler',
+				'visible' => 'preview',
 			],
 			[
 				'title' => 'Şirket Muhasebe',

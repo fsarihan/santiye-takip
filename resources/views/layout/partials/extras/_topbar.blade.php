@@ -3,7 +3,23 @@
 	<span class="font-weight-bold">Şantiye Yönetimi PRO v0.1</span>
 </div>
 <div class="topbar">
+	<div class="dropdown">
+		<div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px">
+			<div class="topbar-item">
+				<div class="btn btn-icon w-auto btn-clean d-flex align-items-center btn-lg px-2"
+				     id="kt_quick_user_toggle">
+					<span class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1">Seçili Şantiye:</span>
+					<span class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3">{{$seciliSantiyeGlobal}}</span>
 
+				</div>
+			</div>
+
+		</div>
+
+		<div class="dropdown-menu p-0 m-0 dropdown-menu-anim-up dropdown-menu-sm dropdown-menu-right">
+			@include('layout.partials.extras.dropdown._santiyeler')
+		</div>
+	</div>
 	{{-- Search --}}
 	@if (config('layout.extras.search.display'))
 		@if (config('layout.extras.search.layout') == 'offcanvas')

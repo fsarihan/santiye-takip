@@ -23,13 +23,6 @@ var KTDatatablesBasicBasic = function () {
 			// Order settings
 			order: [[0, 'desc']],
 
-			headerCallback: function (thead, data, start, end, display) {
-				thead.getElementsByTagName('th')[0].innerHTML = `
-                    <label class="checkbox checkbox-single">
-                        <input type="checkbox" value="" class="group-checkable"/>
-                        <span></span>
-                    </label>`;
-			},
 
 			columnDefs: [
 				{
@@ -37,13 +30,7 @@ var KTDatatablesBasicBasic = function () {
 					width: '30px',
 					className: 'dt-left',
 					orderable: false,
-					render: function (data, type, full, meta) {
-						return `
-                        <label class="checkbox checkbox-single">
-                            <input type="checkbox" value="" class="checkable"/>
-                            <span></span>
-                        </label>`;
-					},
+
 				},
 				{
 					targets: -1,

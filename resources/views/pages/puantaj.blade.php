@@ -42,7 +42,7 @@
 					<div class="modal-body">
 
 						<input type="hidden" id="seciliGunX" name="seciliGun">
-						<input type="hidden" id="santiyeIDX" name="santiyeID" value="{{$seciliSantiye['id']}}">
+						<input type="hidden" id="santiyeIDX" name="santiyeID" value="{{$seciliSantiyeID}}">
 						<table class="table table-bordered table-hover" id="kt_datatable">
 							<thead>
 							<tr>
@@ -100,7 +100,7 @@
 					<div class="modal-body">
 
 						<input type="hidden" id="seciliGun" name="seciliGun">
-						<input type="hidden" id="santiyeID" name="santiyeID" value="{{$seciliSantiye['id']}}">
+						<input type="hidden" id="santiyeID" name="santiyeID" value="{{$seciliSantiyeID}}">
 						<table class="table table-bordered table-hover" id="kt_datatable">
 							<thead>
 							<tr>

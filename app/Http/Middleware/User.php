@@ -7,6 +7,8 @@
 	use App;
 	use Cookie;
 	use Sentinel;
+	use App\Http\Controllers\PagesController;
+	use Illuminate\Support\Facades\View;
 	
 	class User
 	{
@@ -20,7 +22,13 @@
 		public function handle($request, Closure $next) {
 			
 			if(Sentinel::check()) {
-				$user = Sentinel::getUser();
+				//$user = Sentinel::getUser();
+				$secilebilirSantiyeler = PagesController::secilebilirSantiyeler($request);
+				
+				View::composer('layout.partials.extras._topbar', function ($view) use ($secilebilirSantiyeler) {
+					$view->with('secilebilirSantiyelerGlobal', $secilebilirSantiyeler[0]);
+					$view->with('seciliSantiyeGlobal', $secilebilirSantiyeler[1]);
+				});
 				
 				return $next($request);
 			} else {

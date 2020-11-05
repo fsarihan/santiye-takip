@@ -3,6 +3,7 @@
 	namespace App\Http\Controllers;
 	
 	use Carbon\Carbon;
+	use Cartalyst\Sentinel\Laravel\Facades\Reminder;
 	use Cartalyst\Support\Collection;
 	use Illuminate\Http\Request;
 	use Sentinel;
@@ -18,6 +19,42 @@
 	class PagesController extends Controller
 	
 	{
+		public static function secilebilirSantiyeler($request) {
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$sirketeAitSantiyeler = Santiyeler::where('sirket_id', $sirketID)
+				->get()
+				->toArray();
+			$secilebilirSantiyeler = $sirketeAitSantiyeler;
+			if($request->session()
+				->has('seciliSantiyeAdi')) {
+				$seciliSantiye = $request->session()
+					->get('seciliSantiyeAdi');
+			} else {
+				$request->session()
+					->put('seciliSantiyeAdi', $sirketeAitSantiyeler[0]['adi']);
+				$request->session()
+					->put('seciliSantiyeID', $sirketeAitSantiyeler[0]['id']);
+				$seciliSantiye = $sirketeAitSantiyeler[0]['adi'];
+			}
+			
+			return [$secilebilirSantiyeler, $seciliSantiye];
+		}
+		
+		public function santiyeSec(Request $request, $santiyeID) {
+			$sirketeAitSantiye = Santiyeler::where('id', $santiyeID)
+				->first();
+			
+			$request->session()
+				->put('seciliSantiyeAdi', $sirketeAitSantiye['adi']);
+			$request->session()
+				->put('seciliSantiyeID', $sirketeAitSantiye['id']);
+			
+			return redirect()
+				->back()
+				->with('success', 'Seçili şantiyeniz başarıyla değiştirild.');
+		}
+		
 		public function index() {
 			$page_title = 'Anasayfa';
 			$page_description = 'Şantiye uygulaması.';
@@ -125,8 +162,6 @@
 			$sirketeAitSantiyeler = Santiyeler::where('sirket_id', $sirketID)
 				->get()
 				->toArray();
-			//print_r($sirketeAitSantiyeler);
-			//exit();
 			$isciler = Isciler::where('sirket_id', $sirketID)
 				->get()
 				->map(function ($isci) {
@@ -157,14 +192,27 @@
 			return view('pages.calisanlar')->with('data', $data);
 		}
 		
-		function calisanMaaslariSantiye() {
+		function calisanMaaslariSantiye(Request $request, $seciliTarih = null) {
 			$page_title = 'Çalışan Maaşları';
 			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
-			$seciliSantiye = Santiyeler::where('sirket_id', $sirketID)
-				->first();
-			$puantaj = Puantaj::where('santiye_id', $seciliSantiye->id)
+			if(! $seciliTarih) {
+				return view('pages.maasListeSantiye', compact('page_title', 'page_description'));
+			}
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$maaslar = $this->maasHesapla($seciliSantiye, $seciliTarih);
+			
+			return view('pages.calisanMaaslariSantiye', compact('page_title', 'page_description', 'maaslar'));
+		}
+		
+		private function maasHesapla($seciliSantiye, $seciliTarih) {
+			//$user = Sentinel::getUser();
+			//$sirketID = $user->sirket_id;
+			
+			$puantaj = Puantaj::where('santiye_id', $seciliSantiye)
+				->whereBetween('tarih', [$seciliTarih.'-01 00:00:00', $seciliTarih.'-31 23:59:59'])
 				->selectRaw("SUM(puantaj.puan) as toplamPuan")
 				->selectRaw("puantaj.isci_id as isciID")
 				->groupBy('puantaj.isci_id')
@@ -192,9 +240,9 @@
 					if($puan['toplamUcret'] > 0) {
 						return true;
 					}
-				});;
+				});
 			
-			return view('pages.calisanMaaslariSantiye', compact('page_title', 'page_description', 'puantaj'));
+			return $puantaj;
 		}
 		
 		function santiyeler() {
@@ -205,11 +253,6 @@
 			$sirketeAitSantiyeler = Santiyeler::where('sirket_id', $sirketID)
 				->get()
 				->toArray();
-			
-			$data = [
-				//'calisanlar' => $isciler,
-				'santiyeler' => $sirketeAitSantiyeler,
-			];
 			
 			return view('pages.santiyeler', compact('page_title', 'page_description', 'sirketeAitSantiyeler'));
 		}
@@ -239,14 +282,14 @@
 				->with('success', 'Puantaj başarıyla '.$seciliGun.' tarihi için kaydedildi.');
 		}
 		
-		function puantaj() {
+		function puantaj(Request $request) {
 			$page_title = 'Puantaj';
 			$page_description = 'Seçili Şantiyenin Puantaj Listesi.';
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
-			$seciliSantiye = Santiyeler::where('sirket_id', $sirketID)
-				->first();
-			$puantaj = Puantaj::where('santiye_id', $seciliSantiye->id)
+			$seciliSantiyeID = $request->session()
+				->get('seciliSantiyeID');
+			$puantaj = Puantaj::where('santiye_id', $seciliSantiyeID)
 				->get()
 				->map(function ($puan) {
 					switch($puan['puan']) {
@@ -271,12 +314,12 @@
 				});
 			$isciler = Isciler::where('sirket_id', $sirketID)
 				->get()
-				->map(function ($isci) use ($seciliSantiye) {
+				->map(function ($isci) use ($seciliSantiyeID) {
 					$isciSantiyeleri = $isci->getSantiye()
 						->get();
 					$santiyeCalisaniMi = false;
 					foreach($isciSantiyeleri as $santiye) {
-						if($seciliSantiye->id == $santiye['santiye_id']) {
+						if($seciliSantiyeID == $santiye['santiye_id']) {
 							$santiyeCalisaniMi = true;
 						}
 					}
@@ -288,7 +331,7 @@
 				return $value['santiyeCalisanMi'];
 			});
 			
-			return view('pages.puantaj', compact('page_title', 'page_description', 'seciliSantiye', 'isciler', 'puantaj'));
+			return view('pages.puantaj', compact('page_title', 'page_description', 'seciliSantiyeID', 'isciler', 'puantaj'));
 		}
 		/**
 		 * Demo methods below
