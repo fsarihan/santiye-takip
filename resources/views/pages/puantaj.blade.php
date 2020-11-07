@@ -163,10 +163,7 @@
 
 		jQuery(document).ready(function () {
 			var todayDate = moment().startOf('day');
-			var YM = todayDate.format('YYYY-MM');
-			var YESTERDAY = todayDate.clone().subtract(1, 'day').format('YYYY-MM-DD');
 			var TODAY = todayDate.format('YYYY-MM-DD');
-			var TOMORROW = todayDate.clone().add(1, 'day').format('YYYY-MM-DD');
 			var calendarEl = document.getElementById('kt_calendar');
 
 
@@ -248,6 +245,13 @@
 					}
 				});
 			});
+
+
+			var url = new URL(window.location.href);
+			var donem = url.searchParams.get("donem");
+			if (typeof donem != "undefined") {
+				calendar.gotoDate(moment(donem).format('YYYY-MM'));
+			}
 			setInterval(function () {
 				var events = calendar.getEvents();
 				var eventStarts = events.map(function (event) {

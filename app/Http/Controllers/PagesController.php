@@ -15,6 +15,7 @@
 	use App\IsciUzmanlikBaglanti;
 	use App\Puantaj;
 	use App\KullaniciTipleri;
+	use App\CalisanMaasDonem;
 	use SoftDeletes;
 	
 	class PagesController extends Controller
@@ -239,16 +240,61 @@
 			return view('pages.calisanlar')->with('data', $data);
 		}
 		
-		function calisanMaaslariSantiye(Request $request, $seciliTarih = null) {
+		function calisanMaaslariSantiye(Request $request) {
+			$page_title = 'Çalışan Maaşları';
+			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
+			$user = Sentinel::getUser();
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$puantaj = [];
+			//TODO: 2020 sabit bir yıl olarak yazıldı, dinamik yapısı için düşün.
+			for($i = 0; $i < Carbon::now()->month; $i++) {
+				$donemMaaslar = $this->maasHesapla($seciliSantiye, '2020/'.$i);
+				if($donemMaaslar->count() > 0) {
+					$calisanMaasDonem = CalisanMaasDonem::where("santiye_id", $seciliSantiye)
+						->where("donem", "2020/".$i)
+						->first();
+					if($calisanMaasDonem) {
+						$user = Sentinel::findById($calisanMaasDonem['onaylayan_id']);
+						$isci = Isciler::where('id', $user->isci_id)
+							->first();
+						$puantaj['2020/'.$i]['onay'] = true;
+						$puantaj['2020/'.$i]['onaylayan'] = $isci['adi'];
+					} else {
+						$puantaj['2020/'.$i]['onay'] = false;
+						$puantaj['2020/'.$i]['onaylayan'] = false;
+					}
+					$puantaj['2020/'.$i]['donem'] = '2020/'.$i;
+					$puantaj['2020/'.$i]['URL'] = '2020-'.$i;
+					
+					foreach($donemMaaslar as $donemMaas) {
+						if(isset($puantaj['2020/'.$i]['genelToplamUcret'])) {
+							$puantaj['2020/'.$i]['genelToplamUcret'] += $donemMaas['toplamUcret'];
+						} else {
+							$puantaj['2020/'.$i]['genelToplamUcret'] = $donemMaas['toplamUcret'];
+						}
+						if(isset($puantaj['2020/'.$i]['calisanSayisi'])) {
+							$puantaj['2020/'.$i]['calisanSayisi'] += 1;
+						} else {
+							$puantaj['2020/'.$i]['calisanSayisi'] = 1;
+						}
+					}
+				}
+			}
+			$puantaj = collect($puantaj)
+				->sortBy('donem')
+				->toArray();
+			
+			return view('pages.maasListeSantiye', compact('page_title', 'page_description', 'puantaj'));
+		}
+		
+		function calisanMaaslariSantiyeDonem(Request $request, $seciliTarih) {
 			$page_title = 'Çalışan Maaşları';
 			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
 			$user = Sentinel::getUser();
 			$sirketID = $user->sirket_id;
 			$seciliSantiye = $request->session()
 				->get('seciliSantiyeID');
-			if(! $seciliTarih) {
-				return view('pages.maasListeSantiye', compact('page_title', 'page_description'));
-			}
 			$maaslar = $this->maasHesapla($seciliSantiye, $seciliTarih);
 			
 			return view('pages.calisanMaaslariSantiye', compact('page_title', 'page_description', 'maaslar'));

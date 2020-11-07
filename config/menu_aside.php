@@ -27,7 +27,7 @@
 			[
 				'title' => 'Şantiye Puantaj',
 				'root' => true,
-				'icon' => 'flaticon-coins',
+				'icon' => 'flaticon-event-calendar-symbol',
 				'page' => 'panel/puantaj',
 				'visible' => 'preview',
 			],

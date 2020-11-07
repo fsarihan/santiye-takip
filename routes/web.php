@@ -27,7 +27,9 @@
 				->name('.santiyeSec');
 			Route::get('santiyeler', 'PagesController@santiyeler')
 				->name('.santiyeler');
-			Route::get('santiye-muhasebe/calisan-maaslari/{donem?}', 'PagesController@calisanMaaslariSantiye')
+			Route::get('santiye-muhasebe/calisan-maaslari/{donem}', 'PagesController@calisanMaaslariSantiyeDonem')
+				->name('.calisanMaaslariSantiyeDonem');
+			Route::get('santiye-muhasebe/calisan-maaslari/', 'PagesController@calisanMaaslariSantiye')
 				->name('.calisanMaaslariSantiye');
 			Route::get('puantaj', 'PagesController@puantaj')
 				->name('.puantaj');
