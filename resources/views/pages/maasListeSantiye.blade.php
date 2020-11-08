@@ -168,11 +168,26 @@
 						<td class="text-center">
 							<span class="text-dark-65 font-weight-bolder d-block">{{$puan['onaylayan'] != false ? $puan['onaylayan'] : '-' }}</span>
 						</td>
-						<td class="text-center">{{$puan['onay']}}</td>
+						<td class="text-center">
+							@if ($puan['odemeDurumu'])
+								<span class="label label-lg label-light-{{$puan['odemeDurumuClass'] }} label-inline">{{$puan['odemeDurumu']}}</span>
+							@else
+								@if($puan['onay'] == true)
+									<a href="{{route('panel.calisanMaaslariSantiyeOdemeTalebi', $puan['hash'])}}"
+									   class="btn btn-info btn-sm">
+										Ödeme talebi oluştur
+									</a>
+								@else
+									<button class="btn btn-sm btn-dark-80" data-toggle="tooltip" data-theme="dark"
+									        title="Ödeme talebi oluşturabilmeniz için öncelikle puantajı onaylamanız gerekmektedir.">Ödeme talebi oluşturulamaz
+									</button>
+								@endif
+							@endif
+						</td>
 						<td class="text-center">
 							<a href="{{route('panel.calisanMaaslariSantiyeDonem', $puan['URL'])}}"
 							   class="btn btn-text-primary btn-hover-light-primary font-weight-bold mr-2">
-								<i class="flaticon-more-v2"></i>
+								<i class="flaticon-eye"></i>
 							</a>
 							<a href="{{route('panel.puantaj')}}?donem={{$puan['URL']}}"
 							   class="btn btn-text-primary btn-hover-light-primary font-weight-bold mr-2">

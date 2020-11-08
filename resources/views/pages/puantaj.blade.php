@@ -6,10 +6,18 @@
 	<div class="card card-custom">
 		<div class="card-header">
 			<div class="card-title">
+
 				<h3 class="card-label">
 					Puantaj Tablosu
 				</h3>
+				<button type="button" id="onayla" class="btn btn-info" hidden="true">
+					Onayla
+				</button>
+				<button type="button" id="onayli" class="btn btn-outline-success mr-2" disabled="true" hidden="true">
+					ONAYLI
+				</button>
 			</div>
+
 			<button type="button" id="xxxx" class="btn btn-danger" hidden="true" hidden="true" disabled="true">
 				GEÇERSİZ TARİH
 			</button>
@@ -230,7 +238,6 @@
 
 				]
 			});
-
 			calendar.render();
 			moment.locale('tr');
 			$('#yevmiyeEkle').click(function () {
@@ -245,23 +252,51 @@
 					}
 				});
 			});
-
-
 			var url = new URL(window.location.href);
 			var donem = url.searchParams.get("donem");
-			if (typeof donem != "undefined") {
+			if (donem) {
 				calendar.gotoDate(moment(donem).format('YYYY-MM'));
 			}
+			var calisanMaasDonemler = (JSON.parse(atob('{{$calisanMaasDonem}}')));
+
+			$("#onayla").click(function () {
+				Swal.fire({
+					title: "Puantaj Onayla",
+					text: moment(calendar.getDate()).format('YYYY-MM') + " döneminin puantajını inceledim ve onaylıyorum?",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonText: "Evet, onaylıyorum!",
+					cancelButtonText: "Hayır, onaylamıyorum!"
+				}).then(function (result) {
+					if (result.value) {
+						Swal.fire(
+							"Onaylandı!",
+							"Seçili dönem başarıyla onaylandı.",
+							"success"
+						)
+						window.location.href = "{{route('panel.puantajOnay')}}/" + moment(calendar.getDate()).format('YYYY-MM');
+					}
+				});
+			});
 			setInterval(function () {
 				var events = calendar.getEvents();
 				var eventStarts = events.map(function (event) {
 					return moment(event.start).format('YYYYMMDD');
 				});
+				var anahtar = false;
+				for (var x in calisanMaasDonemler) {
+					var onayliDonem = moment(calisanMaasDonemler[x]['donem']).format('YYYY-MM');
+					var acikDonem = moment(calendar.getDate()).format('YYYY-MM');
+					if (onayliDonem == acikDonem) {
+						anahtar = true;
+					}
+				}
+
+
 				if (moment(TODAY).format('YYYYMMDD') < moment(calendar.getDate()).format('YYYYMMDD')) {
 					$('#yevmiyeEkle').prop('hidden', true);
 					$('#yevmiyeDuzenle').prop('hidden', true);
 					$('#xxxx').prop('hidden', false);
-
 				} else {
 					$('#xxxx').prop('hidden', true);
 					$('#yevmiyeEkle').prop('hidden', false);
@@ -273,6 +308,19 @@
 				} else {
 					$('#yevmiyeDuzenle').prop('hidden', false);
 					$('#yevmiyeEkle').prop('hidden', true);
+				}
+				if (anahtar) {
+					$('#onayla').prop('hidden', true);
+					$('#onayli').prop('hidden', false);
+					$('#yevmiyeEkle').prop('hidden', true);
+					$('#yevmiyeDuzenle').prop('hidden', true);
+				} else {
+					$('#onayla').prop('hidden', false);
+					$('#onayli').prop('hidden', true);
+
+				}
+				if (moment(TODAY).format('YYYYMM') <= moment(calendar.getDate()).format('YYYYMM')) {
+					$('#onayla').prop('hidden', true);
 				}
 			}, 75);
 

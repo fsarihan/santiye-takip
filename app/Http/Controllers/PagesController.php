@@ -2,6 +2,7 @@
 	
 	namespace App\Http\Controllers;
 	
+	use App\Odemeler;
 	use Carbon\Carbon;
 	use Cartalyst\Sentinel\Laravel\Facades\Reminder;
 	use Cartalyst\Support\Collection;
@@ -16,6 +17,7 @@
 	use App\Puantaj;
 	use App\KullaniciTipleri;
 	use App\CalisanMaasDonem;
+	use Illuminate\Support\Facades\Crypt;
 	use SoftDeletes;
 	
 	class PagesController extends Controller
@@ -240,6 +242,29 @@
 			return view('pages.calisanlar')->with('data', $data);
 		}
 		
+		function odemeTalebiOlustur(Request $request, $hashCrypted) {
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$hash = json_decode(Crypt::decrypt($hashCrypted, false));
+			$odemeler = new Odemeler;
+			$odemeler->tutar = $hash->toplamTutar;
+			$odemeler->odeme_durum_id = 1;
+			$odemeler->odeme_turu_id = 1;
+			$odemeler->talep_olusturan_id = $user->id;
+			$odemeler->sirket_id = $sirketID;
+			$odemeler->santiye_id = $seciliSantiye;
+			$odemeler->save();
+			CalisanMaasDonem::where("id", $hash->calisanMaasDonemID)
+				->where("donem", $hash->donem)
+				->update(['odeme_id' => $odemeler->id]);
+			
+			return redirect()
+				->back()
+				->with('success', 'Başarıyla '.$hash->donem.' dönemine ait ödeme talebini oluşturdunuz.');
+		}
+		
 		function calisanMaaslariSantiye(Request $request) {
 			$page_title = 'Çalışan Maaşları';
 			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
@@ -248,12 +273,24 @@
 				->get('seciliSantiyeID');
 			$puantaj = [];
 			//TODO: 2020 sabit bir yıl olarak yazıldı, dinamik yapısı için düşün.
-			for($i = 0; $i < Carbon::now()->month; $i++) {
+			for($z = 0; $z < Carbon::now()->month; $z++) {
+				if($z < 10) {
+					$i = str_pad($z, 2, "0", STR_PAD_LEFT);
+				} else {
+					$i = $z;
+				}
 				$donemMaaslar = $this->maasHesapla($seciliSantiye, '2020/'.$i);
 				if($donemMaaslar->count() > 0) {
 					$calisanMaasDonem = CalisanMaasDonem::where("santiye_id", $seciliSantiye)
-						->where("donem", "2020/".$i)
+						->where("donem", "2020-".$i)
 						->first();
+					$calisanMaasDonemOdemeler = CalisanMaasDonem::where("calisan_maas_donem.santiye_id", $seciliSantiye)
+						->where("calisan_maas_donem.donem", "2020-".$i)
+						->join('odemeler', 'calisan_maas_donem.odeme_id', '=', 'odemeler.id')
+						->join('odeme_durumlar', 'odemeler.odeme_durum_id', '=', 'odeme_durumlar.id')
+						->first();
+					$puantaj['2020/'.$i]['odemeDurumu'] = $calisanMaasDonemOdemeler['durum'];
+					$puantaj['2020/'.$i]['odemeDurumuClass'] = $calisanMaasDonemOdemeler['class'];
 					if($calisanMaasDonem) {
 						$user = Sentinel::findById($calisanMaasDonem['onaylayan_id']);
 						$isci = Isciler::where('id', $user->isci_id)
@@ -279,10 +316,15 @@
 							$puantaj['2020/'.$i]['calisanSayisi'] = 1;
 						}
 					}
+					$hash['toplamTutar'] = $puantaj['2020/'.$i]['genelToplamUcret'];
+					$hash['donem'] = '2020-'.$i;
+					$hash['calisanMaasDonemID'] = $calisanMaasDonem['id'];
+					$puantaj['2020/'.$i]['hash'] = Crypt::encryptString(json_encode($hash));
 				}
 			}
 			$puantaj = collect($puantaj)
 				->sortBy('donem')
+				->reverse()
 				->toArray();
 			
 			return view('pages.maasListeSantiye', compact('page_title', 'page_description', 'puantaj'));
@@ -375,6 +417,27 @@
 				->with('success', 'Puantaj başarıyla '.$seciliGun.' tarihi için kaydedildi.');
 		}
 		
+		function puantajOnay(Request $request, $donem) {
+			$user = Sentinel::getUser();
+			$sirketID = $user->sirket_id;
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$calisanMaasDonem = new CalisanMaasDonem();
+			$calisanMaasDonem->donem = $donem;
+			$calisanMaasDonem->santiye_id = $seciliSantiye;
+			$calisanMaasDonem->onaylayan_id = $user['id'];
+			$calisanMaasDonem->save();
+			$previousUrl = app('url')->previous();
+			
+			//return redirect()
+			//	->back()
+			//	->with('success', 'Seçili dönem ('.$donem.') başarıyla onaylandı.');
+			
+			return redirect()
+				->to($previousUrl.'?'.http_build_query(['donem' => $donem]))
+				->with('success', 'Seçili dönem ('.$donem.') başarıyla onaylandı.');
+		}
+		
 		function puantaj(Request $request) {
 			$page_title = 'Puantaj';
 			$page_description = 'Seçili Şantiyenin Puantaj Listesi.';
@@ -382,6 +445,8 @@
 			$sirketID = $user->sirket_id;
 			$seciliSantiyeID = $request->session()
 				->get('seciliSantiyeID');
+			$calisanMaasDonem = CalisanMaasDonem::where("santiye_id", $seciliSantiyeID)
+				->get();
 			$puantaj = Puantaj::where('santiye_id', $seciliSantiyeID)
 				->get()
 				->map(function ($puan) {
@@ -423,14 +488,11 @@
 			$isciler = $isciler->filter(function ($value, $key) {
 				return $value['santiyeCalisanMi'];
 			});
+			$calisanMaasDonem = base64_encode(json_encode($calisanMaasDonem));
 			
-			return view('pages.puantaj', compact('page_title', 'page_description', 'seciliSantiyeID', 'isciler', 'puantaj'));
+			return view('pages.puantaj', compact('page_title', 'page_description', 'seciliSantiyeID', 'isciler', 'puantaj', 'calisanMaasDonem'));
 		}
-		/**
-		 * Demo methods below
-		 */
 		
-		// Datatables
 		public function datatables() {
 			$page_title = 'Datatables';
 			$page_description = 'This is datatables test page';

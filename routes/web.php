@@ -31,10 +31,14 @@
 				->name('.calisanMaaslariSantiyeDonem');
 			Route::get('santiye-muhasebe/calisan-maaslari/', 'PagesController@calisanMaaslariSantiye')
 				->name('.calisanMaaslariSantiye');
+			Route::get('santiye-muhasebe/calisan-maaslari/odeme-talebi/{hash}', 'PagesController@odemeTalebiOlustur')
+				->name('.calisanMaaslariSantiyeOdemeTalebi');
 			Route::get('puantaj', 'PagesController@puantaj')
 				->name('.puantaj');
 			Route::post('puantaj', 'PagesController@puantajPost')
 				->name('.puantajPost');
+			Route::get('puantaj-onay/{donem?}', 'PagesController@puantajOnay')
+				->name('.puantajOnay');
 			Route::get('calisanlar', 'PagesController@calisanlar')
 				->name('.calisanlar');
 			Route::get('calisanlar/ekle', 'PagesController@calisanEkle')
