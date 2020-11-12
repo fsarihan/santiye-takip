@@ -33,6 +33,12 @@
 				->name('.calisanMaaslariSantiye');
 			Route::get('santiye-muhasebe/calisan-maaslari/odeme-talebi/{hash}', 'PagesController@odemeTalebiOlustur')
 				->name('.calisanMaaslariSantiyeOdemeTalebi');
+			Route::get('santiye-muhasebe/santiye-giderleri/', 'PagesController@santiyeGiderleri')
+				->name('.santiyeGiderleri');
+			Route::get('santiye-muhasebe/santiye-giderleri/ekle', 'PagesController@santiyeGideriEkle')
+				->name('.santiyeGideriEkle');
+			Route::post('santiye-muhasebe/santiye-giderleri/ekle', 'PagesController@santiyeGideriEklePost')
+				->name('.santiyeGideriEklePost');
 			Route::get('puantaj', 'PagesController@puantaj')
 				->name('.puantaj');
 			Route::post('puantaj', 'PagesController@puantajPost')

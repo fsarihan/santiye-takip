@@ -30,13 +30,28 @@
 				'icon' => 'flaticon-event-calendar-symbol',
 				'page' => 'panel/puantaj',
 				'visible' => 'preview',
+			
 			],
 			[
 				'title' => 'Şantiye Muhasebe',
 				'root' => true,
 				'icon' => 'flaticon-pie-chart-1',
-				'page' => 'panel/santiye-muhasebe/calisan-maaslari',
+				'page' => 'panel/santiye-muhasebe',
 				'visible' => 'preview',
+				'submenu' => [
+					[
+						'title' => 'Genel Görünüm',
+						'page' => 'panel/santiye-muhasebe',
+					],
+					[
+						'title' => 'Çalışan Maaşları',
+						'page' => 'panel/santiye-muhasebe/calisan-maaslari',
+					],
+					[
+						'title' => 'Şantiye Giderleri',
+						'page' => 'panel/santiye-muhasebe/santiye-giderleri',
+					],
+				],
 			],
 			[
 				'title' => 'Şantiye Panosu',

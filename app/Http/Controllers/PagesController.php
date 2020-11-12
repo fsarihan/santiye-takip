@@ -6,6 +6,7 @@
 	use Carbon\Carbon;
 	use Cartalyst\Sentinel\Laravel\Facades\Reminder;
 	use Cartalyst\Support\Collection;
+	use Illuminate\Support\Facades\Storage;
 	use Illuminate\Http\Request;
 	use Sentinel;
 	use App\Isciler;
@@ -19,6 +20,7 @@
 	use App\CalisanMaasDonem;
 	use Illuminate\Support\Facades\Crypt;
 	use SoftDeletes;
+	use Illuminate\Support\Str;
 	
 	class PagesController extends Controller
 	
@@ -255,6 +257,10 @@
 			$odemeler->talep_olusturan_id = $user->id;
 			$odemeler->sirket_id = $sirketID;
 			$odemeler->santiye_id = $seciliSantiye;
+			$odemeler->aciklama = $hash->donem." Maaşları";
+			$odemeler->kdv_orani = 0;
+			$odemeler->odeme_kategori_id = 1;
+			$odemeler->odenecegi_tarih = new Carbon('first day of next month');
 			$odemeler->save();
 			CalisanMaasDonem::where("id", $hash->calisanMaasDonemID)
 				->where("donem", $hash->donem)
@@ -265,7 +271,95 @@
 				->with('success', 'Başarıyla '.$hash->donem.' dönemine ait ödeme talebini oluşturdunuz.');
 		}
 		
+		function santiyeGiderleri(Request $request) {
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$page_title = 'Çalışan Maaşları';
+			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
+			$odemeler = Odemeler::where("santiye_id", $seciliSantiye)
+				->join('odeme_kategoriler', 'odemeler.odeme_kategori_id', '=', 'odeme_kategoriler.id')
+				->join('odeme_turler', 'odemeler.odeme_turu_id', '=', 'odeme_turler.id')
+				->join('odeme_durumlar', 'odemeler.odeme_durum_id', '=', 'odeme_durumlar.id')
+				->orderBy('created_at', 'desc')
+				->get()
+				->toArray();
+			
+			return view('pages.giderlerSantiye', compact('page_title', 'page_description', 'odemeler'));
+		}
+		
+		function santiyeGideriEkle(Request $request) {
+			$page_title = 'Şantiye Gideri Ekle';
+			$page_description = 'Şantiyenizdeki her türlü gideri ekleyebilir sonradan düzenleyebilir ve takip edebilirsiniz.';
+			$user = Sentinel::getUser();
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			
+			return view('pages.santiyeGiderEkle', compact('page_title', 'page_description'));
+		}
+		
+		public function santiyeGideriEklePost(Request $request) {
+			$user = Sentinel::getUser();
+			$seciliSantiye = $request->session()
+				->get('seciliSantiyeID');
+			$sirketID = $user->sirket_id;
+			$request->validate([
+				'faturaGorsel' => 'mimes:jpeg,png|max:7250',
+			]);
+			$filePath = null;
+			if($request->file()) {
+				$filePath = $request->file('faturaGorsel')
+					->store('uploads', 'public');
+			}
+			$odeme = new Odemeler();
+			$odeme->santiye_id = $seciliSantiye;
+			$odeme->sirket_id = $sirketID;
+			$odeme->aciklama = $request->input('aciklama');
+			$odeme->tutar = $request->input('toplamTutar');
+			$odeme->kdv_orani = $request->input('kdvOran');
+			$odeme->fatura_tarihi = $request->input('faturaTarihi');
+			$odeme->odeme_kategori_id = 2;
+			$odeme->talep_olusturan_id = $user->id;
+			$odeme->fatura_gorsel = $filePath;
+			if($request->input('m_option_1') == 0) {
+				//Ödenecek durumu, ödeneceği tarih gerekli.
+				$odeme->odenecegi_tarih = $request->input('odenecegiTarih');
+				$odeme->odeme_durum_id = 1;
+				$odeme->odeme_turu_id = 1;
+				$odeme->odenen_tutar = 0;
+			} elseif($request->input('m_option_1') == 1) {
+				//Ödendi durumu
+				$odeme->odenen_tutar = $request->input('toplamTutar');
+				$odeme->odeme_durum_id = 2;
+				switch($request->input('odemeYontemi')) {
+					case 0:
+						//Merkez
+						$odeme->odendigi_tarih = $request->input('faturaTarihi');
+						$odeme->odeme_turu_id = 1;
+						break;
+					case 1:
+						//Şantiye Kasası
+						$odeme->odendigi_tarih = $request->input('faturaTarihi');
+						$odeme->odeme_turu_id = 2;
+						break;
+					case 2:
+						//Çalışan tarafından
+						$odeme->odendigi_tarih = $request->input('faturaTarihi');
+						$odeme->odeme_turu_id = 4;
+						$odeme->odenecegi_kisi_id = 1;  //TODO: frontendde isim seçip buraya id olarak düşürt.
+						$odeme->odenecegi_kisi_tarih = $request->input('calisanaOdenecegiTarih');
+						break;
+				}
+			}
+			
+			$odeme->save();
+			
+			return redirect()
+				->route('panel.santiyeGiderleri')
+				->with('success', 'Şantiye gideri başarıyla eklendi..');
+		}
+		
 		function calisanMaaslariSantiye(Request $request) {
+			//TODO: maaş updatei yaparken onaylanmamış dönem var ise uyar!
 			$page_title = 'Çalışan Maaşları';
 			$page_description = 'Şantiyenizdeki işçilerin maaş tablosu.';
 			$user = Sentinel::getUser();
@@ -343,23 +437,28 @@
 		}
 		
 		private function maasHesapla($seciliSantiye, $seciliTarih) {
-			//$user = Sentinel::getUser();
-			//$sirketID = $user->sirket_id;
-			
+			$seciliTarih = Str::replaceFirst("/", "-", $seciliTarih);
 			$puantaj = Puantaj::where('santiye_id', $seciliSantiye)
 				->whereBetween('tarih', [$seciliTarih.'-01 00:00:00', $seciliTarih.'-31 23:59:59'])
 				->selectRaw("SUM(puantaj.puan) as toplamPuan")
 				->selectRaw("puantaj.isci_id as isciID")
 				->groupBy('puantaj.isci_id')
 				->get()
-				->map(function ($puan) {
+				->map(function ($puan) use ($seciliTarih) {
 					$isci = Isciler::where('id', $puan['isciID'])
 						->first();
 					$puan['isci'] = $isci;
 					$yevmiye = CalisanMaaslari::where('isci_id', $puan['isciID'])
+						->where('created_at', "<=", ($seciliTarih.'-31 00:00:00'))
 						->join('ucret_turleri', 'calisan_maaslari.ucret_turu_id', '=', 'ucret_turleri.id')
-						->orderBy('created_at', 'desc')
+						->orderBy('calisan_maaslari.created_at', 'desc')
 						->first();
+					if(! $yevmiye) {
+						$yevmiye = CalisanMaaslari::where('isci_id', $puan['isciID'])
+							->join('ucret_turleri', 'calisan_maaslari.ucret_turu_id', '=', 'ucret_turleri.id')
+							->orderBy('calisan_maaslari.created_at', 'desc')
+							->first();
+					}
 					$puan['ucretTuru'] = $yevmiye->tur;
 					$puan['yevmiye'] = $yevmiye->ucret;
 					if($yevmiye->ucret_turu_id == 2) {

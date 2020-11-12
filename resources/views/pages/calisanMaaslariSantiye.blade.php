@@ -108,6 +108,7 @@
 						<td>{{$maas['yevmiye']}}</td>
 						<td>{{$maas['toplamUcret']}}</td>
 					</tr>
+
 				@endforeach
 				</tbody>
 			</table>

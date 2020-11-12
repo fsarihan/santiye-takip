@@ -13,6 +13,7 @@
 			'isci_id',
 			'ucret_turu_id',
 			'ucret',
+			'created_at',
 		
 		];
 	}
