@@ -252,6 +252,7 @@
 			$hash = json_decode(Crypt::decrypt($hashCrypted, false));
 			$odemeler = new Odemeler;
 			$odemeler->tutar = $hash->toplamTutar;
+			$odemeler->odenen_tutar = 0;
 			$odemeler->odeme_durum_id = 1;
 			$odemeler->odeme_turu_id = 1;
 			$odemeler->talep_olusturan_id = $user->id;
@@ -261,6 +262,7 @@
 			$odemeler->kdv_orani = 0;
 			$odemeler->odeme_kategori_id = 1;
 			$odemeler->odenecegi_tarih = new Carbon('first day of next month');
+			$odemeler->fatura_tarihi = new Carbon('first day of next month');
 			$odemeler->save();
 			CalisanMaasDonem::where("id", $hash->calisanMaasDonemID)
 				->where("donem", $hash->donem)

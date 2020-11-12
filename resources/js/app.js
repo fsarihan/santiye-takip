@@ -20,23 +20,23 @@ var KTDatatablesAdvancedColumnRendering = function () {
 		// begin first table
 		table.DataTable({
 			data: dataSet,
-			dom: 'BHfrtip',
-			buttons: [
-				{
-					extend: 'pdfHtml5',
-					text: 'Save current page',
-					exportOptions: {
-						modifier: {
-							page: 'current'
-						},
-						columns: function (idx, data, node) {
-							if (node.innerHTML == "AKSİYON")
-								return false;
-							return true;
-						}
-					}
-				}
-			],
+			// dom: 'BHfrtip',
+			// buttons: [
+			// 	{
+			// 		extend: 'pdfHtml5',
+			// 		text: 'Save current page',
+			// 		exportOptions: {
+			// 			modifier: {
+			// 				page: 'current'
+			// 			},
+			// 			columns: function (idx, data, node) {
+			// 				if (node.innerHTML == "AKSİYON")
+			// 					return false;
+			// 				return true;
+			// 			}
+			// 		}
+			// 	}
+			// ],
 			columns: [
 				{title: "AÇIKLAMA"},
 				{title: "KALAN TUTAR"},
@@ -65,6 +65,7 @@ var KTDatatablesAdvancedColumnRendering = function () {
 				},
 				{
 					targets: 1,
+					orderable: false,
 					render: function (data, type, full, meta) {
 						return `<div class="ml-3">
 									<span class="text-dark-75 font-weight-bolder d-block font-size-lg">` + (parseInt(full[2]) - parseInt(full[3])) + ` ₺</span>
@@ -133,7 +134,7 @@ var KTDatatablesAdvancedColumnRendering = function () {
 						}
 						else {
 							var returnText = '<span class="label label-' + status[full[10]].state + ' label-dot mr-2"></span>' +
-								'<span class="font-weight-bold text-' + status[full[10]].state + '">' + full[9] + '</span><div class="ml-3"><span class="text-muted">Ödeneceği Tarih: ' + full[4] + '</span>';
+								'<span class="font-weight-bold text-' + status[full[10]].state + '">' + full[9] + '</span><div class="ml-3"><span class="text-muted">Ödeneceği Tarih: ' + full[13] + '</span>';
 						}
 						return returnText;
 					},
