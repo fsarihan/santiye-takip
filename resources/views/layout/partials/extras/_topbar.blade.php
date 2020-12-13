@@ -9,7 +9,8 @@
 				<div class="btn btn-icon w-auto btn-clean d-flex align-items-center btn-lg px-2"
 				     id="kt_quick_user_toggle">
 					<span class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1">Seçili Şantiye:</span>
-					<span class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3">{{$seciliSantiyeGlobal}}</span>
+					<span class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline"><span
+								class="label label-xl label-dot label-success"></span> {{$seciliSantiyeGlobal}}</span>
 
 				</div>
 			</div>

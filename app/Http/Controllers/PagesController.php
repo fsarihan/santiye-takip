@@ -285,8 +285,13 @@
 				->orderBy('created_at', 'desc')
 				->get()
 				->toArray();
+			$odemelerTopam = Odemeler::where("santiye_id", $seciliSantiye)
+				->selectRaw("SUM(odemeler.tutar) as toplamTutar")
+				->selectRaw("SUM(odemeler.odenen_tutar) as odenenTutar")
+				->get()
+				->toArray();
 			
-			return view('pages.giderlerSantiye', compact('page_title', 'page_description', 'odemeler'));
+			return view('pages.giderlerSantiye', compact('page_title', 'page_description', 'odemeler', 'odemelerTopam'));
 		}
 		
 		function santiyeGideriEkle(Request $request) {

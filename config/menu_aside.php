@@ -25,33 +25,20 @@
 			],
 			
 			[
+				'title' => 'Şantiye Çalışanlar',
+				'root' => true,
+				'icon' => 'flaticon-user-ok',
+				'page' => 'panel/puantaj',
+				'visible' => 'preview',
+			
+			],
+			[
 				'title' => 'Şantiye Puantaj',
 				'root' => true,
 				'icon' => 'flaticon-event-calendar-symbol',
 				'page' => 'panel/puantaj',
 				'visible' => 'preview',
 			
-			],
-			[
-				'title' => 'Şantiye Muhasebe',
-				'root' => true,
-				'icon' => 'flaticon-pie-chart-1',
-				'page' => 'panel/santiye-muhasebe',
-				'visible' => 'preview',
-				'submenu' => [
-					[
-						'title' => 'Genel Görünüm',
-						'page' => 'panel/santiye-muhasebe',
-					],
-					[
-						'title' => 'Çalışan Maaşları',
-						'page' => 'panel/santiye-muhasebe/calisan-maaslari',
-					],
-					[
-						'title' => 'Şantiye Giderleri',
-						'page' => 'panel/santiye-muhasebe/santiye-giderleri',
-					],
-				],
 			],
 			[
 				'title' => 'Şantiye Panosu',
@@ -68,11 +55,30 @@
 				'visible' => 'preview',
 			],
 			[
+				'section' => 'Şantiye Muhasebe',
+			],
+			[
 				'title' => 'Şantiye Hakedişler',
 				'root' => true,
 				'icon' => 'flaticon2-checking',
 				'page' => 'builder',
 				'visible' => 'preview',
+			],
+			[
+				'title' => 'Dönemlik Maaşlar',
+				'root' => true,
+				'icon' => 'flaticon2-analytics-1',
+				'page' => 'panel/santiye-muhasebe/calisan-maaslari',
+				'visible' => 'preview',
+			
+			],
+			[
+				'title' => 'Şantiye Giderleri',
+				'root' => true,
+				'icon' => 'flaticon-diagram',
+				'page' => 'panel/santiye-muhasebe/santiye-giderleri',
+				'visible' => 'preview',
+			
 			],
 			// Layout
 			[
@@ -114,14 +120,7 @@
 				'visible' => 'preview',
 			],
 			[
-				'title' => 'Şirket Dosyalar',
-				'root' => true,
-				'icon' => 'flaticon2-folder',
-				'page' => 'builder',
-				'visible' => 'preview',
-			],
-			[
-				'title' => 'Şirket Yönetimi',
+				'title' => 'Ayarlar',
 				'root' => true,
 				'icon' => 'flaticon2-settings',
 				'page' => 'builder',

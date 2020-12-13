@@ -68,7 +68,7 @@ var KTDatatablesAdvancedColumnRendering = function () {
 					orderable: false,
 					render: function (data, type, full, meta) {
 						return `<div class="ml-3">
-									<span class="text-dark-75 font-weight-bolder d-block font-size-lg">` + (parseInt(full[2]) - parseInt(full[3])) + ` ₺</span>
+									<span class="text-dark-75 font-weight-bolder d-block font-size-lg">` + full[14] + ` ₺</span>
 									<span class="text-muted font-weight-bold d-block font-size-sm">Toplam: ` + full[2] + ` ₺</span>
 								</div>`;
 					},

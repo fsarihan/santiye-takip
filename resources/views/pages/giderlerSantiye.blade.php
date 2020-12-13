@@ -7,12 +7,13 @@
 			<!--begin::Stats Widget 22-->
 			<div class="card card-custom bgi-no-repeat card-stretch gutter-b"
 			     style="background-position: right top; background-size: 30% auto; background-image: url(/media/svg/shapes/abstract-3.svg)">
+
 				<!--begin::Body-->
 				<div class="card-body my-4">
 					<a href="#"
 					   class="card-title font-weight-bolder text-info font-size-h6 mb-4 text-hover-state-dark d-block">Toplam Gider</a>
 					<div class="font-weight-bold text-muted font-size-sm">
-						<span class="text-dark-75 font-weight-bolder font-size-h2 mr-2">3.543.234,00</span>TL
+						<span class="text-dark-75 font-weight-bolder font-size-h2 mr-2">{{number_format($odemelerTopam[0]['toplamTutar'], 2)}}</span>TL
 					</div>
 
 				</div>
@@ -29,7 +30,7 @@
 					<a href="#"
 					   class="card-title font-weight-bolder text-white font-size-h6 mb-4 text-hover-state-dark d-block">Toplam Ödenen Gider</a>
 					<div class="font-weight-bold text-white font-size-sm">
-						<span class="font-size-h2 mr-2">86.000,20</span>TL
+						<span class="font-size-h2 mr-2">{{number_format($odemelerTopam[0]['odenenTutar'],2)}}</span>TL
 					</div>
 
 				</div>
@@ -46,7 +47,7 @@
 					<a href="#"
 					   class="card-title font-weight-bolder text-white font-size-h6 mb-4 text-hover-state-dark d-block">Toplam Ödenecek Gider</a>
 					<div class="font-weight-bold text-white font-size-sm">
-						<span class="font-size-h2 mr-2">2.443.111,45</span>TL
+						<span class="font-size-h2 mr-2">{{number_format((($odemelerTopam[0]['toplamTutar'])-($odemelerTopam[0]['odenenTutar'])),2)}}</span>TL
 					</div>
 
 				</div>
@@ -92,7 +93,7 @@
 		moment.locale('tr');
 		let dataSet = [];
 		@foreach($odemeler as $gider)
-		dataSet.push(["{{$gider['aciklama']}}", "{{$gider['adi']}}", "{{$gider['tutar']}}", "{{$gider['odenen_tutar']}}", moment("{{$gider['created_at']}}").format('LLL'), moment("{{$gider['odenecegi_tarih']}}").format('LL'), moment("{{$gider['odendigi_tarih']}}").format('LL'), "{{$gider['tur']}}", parseInt("{{$gider['odeme_turu_id']}}"), "{{$gider['durum']}}", parseInt("{{$gider['odeme_durum_id']}}"), moment("{{$gider['odendigi_tarih']}}").format('LL'), moment("{{$gider['fatura_tarihi']}}").format('LL'), moment("{{$gider['odenecegi_tarih']}}").format('LL')]);
+		dataSet.push(["{{$gider['aciklama']}}", "{{$gider['adi']}}", "{{number_format($gider['tutar'],2)}}", "{{number_format($gider['odenen_tutar'],2)}}", moment("{{$gider['created_at']}}").format('LLL'), moment("{{$gider['odenecegi_tarih']}}").format('LL'), moment("{{$gider['odendigi_tarih']}}").format('LL'), "{{$gider['tur']}}", parseInt("{{$gider['odeme_turu_id']}}"), "{{$gider['durum']}}", parseInt("{{$gider['odeme_durum_id']}}"), moment("{{$gider['odendigi_tarih']}}").format('LL'), moment("{{$gider['fatura_tarihi']}}").format('LL'), moment("{{$gider['odenecegi_tarih']}}").format('LL'), "{{number_format(($gider['tutar']-$gider['odenen_tutar']),2)}}"]);
 		@endforeach
 
 	</script>
