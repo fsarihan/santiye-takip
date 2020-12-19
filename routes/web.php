@@ -1,7 +1,7 @@
 <?php
-	
+
 	use Illuminate\Support\Facades\Route;
-	
+
 	/*
 	|--------------------------------------------------------------------------
 	| Web Routes
@@ -12,7 +12,7 @@
 	| contains the "web" middleware group. Now create something great!
 	|
 	*/
-	
+
 	Route::name('panel')
 		->middleware('user')
 		->prefix('panel')
@@ -52,7 +52,7 @@
 			Route::post('calisanlar/ekle', 'PagesController@calisanEklePost')
 				->name('.calisanEklePost');
 		});
-	
+
 	Route::name('user')
 		->middleware('guest')
 		->group(function () {
@@ -65,7 +65,7 @@
 			Route::post('register', 'User@registerPost')
 				->name('.registerPost');
 		});
-	
+
 	Route::get('/', 'PagesController@index')
 		->middleware('user');
 	//
