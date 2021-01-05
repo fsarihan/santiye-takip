@@ -114,7 +114,7 @@
         "wnumb": "^1.1.0"
     },
     "devDependencies": {
-        "axios": "^0.19",
+        "axios": "^0.21",
         "cross-env": "^7.0",
         "laravel-mix": "^5.0.7",
         "lodash": "^4.17.20",
