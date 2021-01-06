@@ -30,7 +30,16 @@
             $sirketID = $user->sirket_id;
             $page_title = 'Kullanıcı Tipleri';
             $page_description = 'Kullanıcı tipleri oluşturun, düzenleyin, yetkilendirin.';
-            $kullaniciTipleri = KullaniciTipleri::where('sirket_id', $sirketID);
+            $kullaniciTipleri = KullaniciTipleri::where('sirket_id', $sirketID)
+                ->get()
+                ->map(function ($kTipi) {
+                    $olusturanU = Sentinel::findById($kTipi->olusturan_id);
+                    $olusturan = Isciler::where('id', $olusturanU->isci_id)
+                        ->get();
+                    $kTipi['olusturan'] = $olusturan[0]->adi;
+
+                    return $kTipi;
+                });
 
             return view('pages.kullaniciTipleri', compact('page_title', 'page_description', 'kullaniciTipleri'));
         }
@@ -409,56 +418,63 @@
             $seciliSantiye = $request->session()
                 ->get('seciliSantiyeID');
             $puantaj = [];
-            //TODO: 2020 sabit bir yıl olarak yazıldı, dinamik yapısı için düşün.
-            for($z = 0; $z < Carbon::now()->month; $z++) {
-                if($z < 10) {
-                    $i = str_pad($z, 2, "0", STR_PAD_LEFT);
-                } else {
-                    $i = $z;
-                }
-                $donemMaaslar = $this->maasHesapla($seciliSantiye, '2020/'.$i);
-                if($donemMaaslar->count() > 0) {
-                    $calisanMaasDonem = CalisanMaasDonem::where("santiye_id", $seciliSantiye)
-                        ->where("donem", "2020-".$i)
-                        ->first();
-                    $calisanMaasDonemOdemeler = CalisanMaasDonem::where("calisan_maas_donem.santiye_id", $seciliSantiye)
-                        ->where("calisan_maas_donem.donem", "2020-".$i)
-                        ->join('odemeler', 'calisan_maas_donem.odeme_id', '=', 'odemeler.id')
-                        ->join('odeme_durumlar', 'odemeler.odeme_durum_id', '=', 'odeme_durumlar.id')
-                        ->first();
-                    $puantaj['2020/'.$i]['odemeDurumu'] = $calisanMaasDonemOdemeler['durum'];
-                    $puantaj['2020/'.$i]['odemeDurumuClass'] = $calisanMaasDonemOdemeler['class'];
-                    if($calisanMaasDonem) {
-                        $user = Sentinel::findById($calisanMaasDonem['onaylayan_id']);
-                        $isci = Isciler::where('id', $user->isci_id)
-                            ->first();
-                        $puantaj['2020/'.$i]['onay'] = true;
-                        $puantaj['2020/'.$i]['onaylayan'] = $isci['adi'];
-                    } else {
-                        $puantaj['2020/'.$i]['onay'] = false;
-                        $puantaj['2020/'.$i]['onaylayan'] = false;
-                    }
-                    $puantaj['2020/'.$i]['donem'] = '2020/'.$i;
-                    $puantaj['2020/'.$i]['URL'] = '2020-'.$i;
+            $yillar = [];
+            for($z = 2017; $z < Carbon::now()->year + 1; $z++) {
+                array_push($yillar, $z);
+            }
+            foreach($yillar as $yil) {
 
-                    foreach($donemMaaslar as $donemMaas) {
-                        if(isset($puantaj['2020/'.$i]['genelToplamUcret'])) {
-                            $puantaj['2020/'.$i]['genelToplamUcret'] += $donemMaas['toplamUcret'];
-                        } else {
-                            $puantaj['2020/'.$i]['genelToplamUcret'] = $donemMaas['toplamUcret'];
-                        }
-                        if(isset($puantaj['2020/'.$i]['calisanSayisi'])) {
-                            $puantaj['2020/'.$i]['calisanSayisi'] += 1;
-                        } else {
-                            $puantaj['2020/'.$i]['calisanSayisi'] = 1;
-                        }
+                for($z = 0; $z < 13; $z++) {
+                    if($z < 10) {
+                        $i = str_pad($z, 2, "0", STR_PAD_LEFT);
+                    } else {
+                        $i = $z;
                     }
-                    $hash['toplamTutar'] = $puantaj['2020/'.$i]['genelToplamUcret'];
-                    $hash['donem'] = '2020-'.$i;
-                    $hash['calisanMaasDonemID'] = $calisanMaasDonem['id'];
-                    $puantaj['2020/'.$i]['hash'] = Crypt::encryptString(json_encode($hash));
+                    $donemMaaslar = $this->maasHesapla($seciliSantiye, $yil.'/'.$i);
+                    if($donemMaaslar->count() > 0) {
+                        $calisanMaasDonem = CalisanMaasDonem::where("santiye_id", $seciliSantiye)
+                            ->where("donem", $yil."-".$i)
+                            ->first();
+                        $calisanMaasDonemOdemeler = CalisanMaasDonem::where("calisan_maas_donem.santiye_id", $seciliSantiye)
+                            ->where("calisan_maas_donem.donem", $yil."-".$i)
+                            ->join('odemeler', 'calisan_maas_donem.odeme_id', '=', 'odemeler.id')
+                            ->join('odeme_durumlar', 'odemeler.odeme_durum_id', '=', 'odeme_durumlar.id')
+                            ->first();
+                        $puantaj[$yil.'/'.$i]['odemeDurumu'] = $calisanMaasDonemOdemeler['durum'];
+                        $puantaj[$yil.'/'.$i]['odemeDurumuClass'] = $calisanMaasDonemOdemeler['class'];
+                        if($calisanMaasDonem) {
+                            $user = Sentinel::findById($calisanMaasDonem['onaylayan_id']);
+                            $isci = Isciler::where('id', $user->isci_id)
+                                ->first();
+                            $puantaj[$yil.'/'.$i]['onay'] = true;
+                            $puantaj[$yil.'/'.$i]['onaylayan'] = $isci['adi'];
+                        } else {
+                            $puantaj[$yil.'/'.$i]['onay'] = false;
+                            $puantaj[$yil.'/'.$i]['onaylayan'] = false;
+                        }
+                        $puantaj[$yil.'/'.$i]['donem'] = $yil.'/'.$i;
+                        $puantaj[$yil.'/'.$i]['URL'] = $yil."-".$i;
+
+                        foreach($donemMaaslar as $donemMaas) {
+                            if(isset($puantaj[$yil.'/'.$i]['genelToplamUcret'])) {
+                                $puantaj[$yil.'/'.$i]['genelToplamUcret'] += $donemMaas['toplamUcret'];
+                            } else {
+                                $puantaj[$yil.'/'.$i]['genelToplamUcret'] = $donemMaas['toplamUcret'];
+                            }
+                            if(isset($puantaj[$yil.'/'.$i]['calisanSayisi'])) {
+                                $puantaj[$yil.'/'.$i]['calisanSayisi'] += 1;
+                            } else {
+                                $puantaj[$yil.'/'.$i]['calisanSayisi'] = 1;
+                            }
+                        }
+                        $hash['toplamTutar'] = $puantaj[$yil.'/'.$i]['genelToplamUcret'];
+                        $hash['donem'] = $yil."-".$i;
+                        $hash['calisanMaasDonemID'] = $calisanMaasDonem['id'];
+                        $puantaj[$yil.'/'.$i]['hash'] = Crypt::encryptString(json_encode($hash));
+                    }
                 }
             }
+
             $puantaj = collect($puantaj)
                 ->sortBy('donem')
                 ->reverse()

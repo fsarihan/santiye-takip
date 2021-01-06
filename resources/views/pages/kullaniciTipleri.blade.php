@@ -160,18 +160,21 @@
                 <thead>
                 <tr>
                     <th>Kullanıcı Profili</th>
-                    <th>Kayıtlı Kullanıcı Sayısı</th>
                     <th>Oluşturan Kişi</th>
-                    <th>Yetkiler</th>
+                    <th>Eylem</th>
                 </tr>
                 </thead>
                 <tbody>
+                <tr>
+                    <td>Sistem Yöneticisi</td>
+                    <td>SİSTEM</td>
+                    <td></td>
+                </tr>
                 @foreach($kullaniciTipleri  as $kullaniciTipi)
                     <tr>
-                        <td>{{$kullaniciTipi['adi']->adi}}</td>
-                        <td>NaN</td>
-                        <td>{{$kullaniciTipi['olusturan_id']}}</td>
-                        <td>{{$kullaniciTipi['yevmiye']}}</td>
+                        <td>{{$kullaniciTipi['adi']}}</td>
+                        <td>{{$kullaniciTipi['olusturan']}}</td>
+                        <td>Düzenle</td>
                     </tr>
                 @endforeach
                 </tbody>
